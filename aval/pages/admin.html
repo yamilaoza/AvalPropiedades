@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión — Aval Propiedades</title>
+  <!-- Prevent indexing of admin page -->
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-page">
+
+<!-- ══════════════════════════════════════════
+     NAVBAR
+══════════════════════════════════════════ -->
+<nav class="navbar navbar--solid" role="navigation">
+  <div class="container navbar__inner">
+    <a href="../index.html" class="navbar__logo">
+      <img src="../assets/logo.png" alt="Aval Propiedades" class="navbar__logo-img">
+    </a>
+    <ul class="navbar__links">
+      <li><a href="../index.html" class="navbar__link">← Volver al sitio</a></li>
+      <li>
+        <button onclick="AdminPage.logout()"
+                class="navbar__link navbar__link--cta"
+                style="background:#991b1b;border:none;cursor:pointer;">
+          Cerrar sesión
+        </button>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+
+<!-- ══════════════════════════════════════════
+     LOGIN
+══════════════════════════════════════════ -->
+<div id="loginWrap" class="login-wrap">
+  <div class="login-card">
+    <div class="login-card__logo" aria-hidden="true">A</div>
+    <h1 class="login-card__title">Panel de Gestión</h1>
+    <p class="login-card__sub">Ingresá tu contraseña para continuar</p>
+
+    <div id="loginError" class="login-card__error" role="alert">
+      Contraseña incorrecta. Intentá de nuevo.
+    </div>
+
+    <div class="form-group" style="text-align:left;">
+      <label class="form-label" for="loginPass">Contraseña</label>
+      <input id="loginPass"
+             type="password"
+             class="form-control"
+             placeholder="••••••••"
+             autocomplete="current-password"
+             autofocus>
+    </div>
+
+    <button id="loginBtn" class="btn btn--primary btn--block" style="margin-top:8px;">
+      Ingresar →
+    </button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     ADMIN PANEL (hidden until login)
+══════════════════════════════════════════ -->
+<div id="adminLayout" class="admin-layout" role="main">
+
+  <!-- Sidebar -->
+  <nav class="admin-sidebar" aria-label="Menú de administración">
+    <div style="color:rgba(255,255,255,0.35);font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:0 12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:8px;">
+      Panel de Gestión
+    </div>
+
+    <div class="admin-sidebar__label">Menú</div>
+
+    <button class="admin-sidebar__link admin-sidebar__link--active" data-section="dashboard">
+      <span class="admin-sidebar__icon">📊</span> Dashboard
+    </button>
+    <button class="admin-sidebar__link" data-section="properties">
+      <span class="admin-sidebar__icon">🏠</span> Publicaciones
+    </button>
+    <button class="admin-sidebar__link" data-section="add">
+      <span class="admin-sidebar__icon">➕</span> Agregar publicación
+    </button>
+
+    <div class="admin-sidebar__label" style="margin-top:auto;padding-top:20px;">Cuenta</div>
+    <button class="admin-sidebar__link" onclick="AdminPage.logout()">
+      <span class="admin-sidebar__icon">🚪</span> Cerrar sesión
+    </button>
+  </nav>
+
+  <!-- Main content -->
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <h2 id="adminTitle" class="admin-topbar__title">Dashboard</h2>
+      <a href="../index.html" class="btn btn--ghost btn--sm" target="_blank">
+        👁️ Ver sitio
+      </a>
+    </div>
+    <div id="adminContent" class="admin-content">
+      <!-- Rendered by admin.js -->
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+<!-- Scripts -->
+<script src="../js/store.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/admin.js"></script>
+</body>
+</html>
