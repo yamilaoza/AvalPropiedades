@@ -238,7 +238,7 @@
 .contact__form-card .form-control:focus { border-color:var(--accent); background:rgba(255,255,255,0.1); }
 
 
-/* ══ RESPONSIVE ══ */
+/* ══ RESPONSIVE ══ 
 @media (max-width: 900px) {
   .prop-card {
     grid-template-columns: 160px 1fr;
@@ -253,7 +253,7 @@
     display: none;
   }
 }
-
+*/
 @media (max-width: 900px) {
   .prop-card {
     grid-template-columns: 120px 1fr;
@@ -285,5 +285,20 @@
   }
   .about__feat-icon { 
     margin-bottom: 8px; 
+  }
+  .hero { 
+    height: auto; 
+    padding: 20px 10px 20px; 
+  }
+  .hero__badge { 
+    margin-bottom: 16px; 
+  }
+  .hero__title { 
+    font-size: clamp(28px, 8vw, 48px); 
+  }
+  .hero__subtitle { 
+    font-size: clamp(12px, 3vw, 16px); 
+    max-width: 100%; 
+    margin-bottom: 32px; 
   }
 }
