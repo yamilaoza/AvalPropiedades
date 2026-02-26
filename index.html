@@ -24,6 +24,21 @@
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/home.css">
 </head>
+<style>
+  /* Oculta el body inicialmente */
+  body {
+    visibility: hidden;
+    opacity: 0;
+  }
+</style>
+
+<script>
+  // Muestra el body cuando el CSS y la página hayan cargado
+  window.addEventListener('load', function() {
+    document.body.style.visibility = 'visible';
+    document.body.style.opacity = '1';
+  });
+</script>
 <body>
 
 <!-- ══ NAVBAR ══ -->
