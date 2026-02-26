@@ -98,7 +98,7 @@ textarea.form-control { resize:vertical; min-height:100px; }
 .footer { background:var(--navy); border-top:1px solid rgba(255,255,255,0.07); padding-block:40px 24px; }
 .footer__grid { display:grid; grid-template-columns:2fr 1fr 1fr; gap:40px; margin-bottom:28px; }
 .footer__logo-pill { background:white; border-radius:var(--r-md); padding:6px 14px; display:inline-flex; margin-bottom:14px; }
-.footer__logo-img { height:30px; width:auto; object-fit:contain; display:block; }
+.footer__logo-img { height:65px; width:auto; object-fit:contain; display:block; }
 .footer__brand p { color:rgba(255,255,255,0.42); font-size:14px; line-height:1.7; max-width:260px; }
 .footer__col-title { color:white; font-size:11px; font-weight:600; letter-spacing:2px; text-transform:uppercase; margin-bottom:13px; }
 .footer__links { display:flex; flex-direction:column; gap:8px; }

@@ -328,7 +328,7 @@
 .prop-sidebar__ext-link:hover { border-color: var(--accent); background: var(--sky); color: var(--accent); }
 
 /* ── SIMILAR PROPS ── */
-.similar { padding-block: 64px; background: var(--gray-50); border-top: 1px solid var(--gray-200); }
+.similar { padding-block: 64px; border-top: 1px solid var(--gray-200); }
 .similar__title {
   font-family: var(--font-display);
   font-size: 26px;
