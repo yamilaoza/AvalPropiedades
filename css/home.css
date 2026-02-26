@@ -270,4 +270,16 @@
     gap: 8px;
     min-width: unset;
   }
+  .hero__search-grid {
+    grid-template-columns: 1fr;
+  }
+  .about__grid {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .contact__grid {
+    grid-template-columns: 1fr;
+  }
+  .about__feat { flex-direction: column; align-items: center; text-align: center; }
+  .about__feat-icon { margin-bottom: 8px; }
 }

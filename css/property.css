@@ -156,7 +156,6 @@
 .prop-detail__badge--alquiler { background: var(--accent); color: white; }
 
 .prop-detail__title {
-  font-family: var(--font-display);
   font-size: clamp(26px, 4vw, 38px);
   font-weight: 700;
   color: var(--navy);
@@ -164,7 +163,6 @@
   margin-bottom: 10px;
 }
 .prop-detail__price {
-  font-family: var(--font-display);
   font-size: 36px;
   font-weight: 700;
   color: var(--accent);
@@ -259,8 +257,7 @@
 }
 
 .prop-sidebar__price {
-  font-family: var(--font-display);
-  font-size: 30px;
+  font-size: 27px;
   font-weight: 700;
   color: var(--accent);
   margin-bottom: 4px;
