@@ -38,7 +38,7 @@ const PropertyPage = {
 
     const badge = document.getElementById('detailBadge');
     if (badge) {
-      badge.textContent = p.tipo === 'venta' ? '🏠 Venta' : '🔑 Alquiler';
+      badge.textContent = p.tipo === 'venta' ? 'Venta' : 'Alquiler';
       badge.className   = `prop-detail__badge prop-detail__badge--${p.tipo}`;
     }
 
