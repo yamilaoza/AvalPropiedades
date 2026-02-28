@@ -59,7 +59,7 @@ const CardBuilder = {
         <div class="prop-card__body">
           ${zone ? `<div class="prop-card__zone">${zone}</div>` : ''}
           <div class="prop-card__title">${prop.title}</div>
-          <div class="prop-card__price"><strong>${prop.price}</strong>${priceLabel}</div>
+          <div class="prop-card__price"><strong>${prop.moneda || ''} ${prop.price}</strong>${priceLabel}</div>
         </div>
         <div class="prop-card__actions">
           <a class="prop-card__cta prop-card__cta--primary"

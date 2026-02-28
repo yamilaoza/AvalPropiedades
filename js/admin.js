@@ -7,7 +7,7 @@
 // ── CONFIG ──
 // To change the password: replace this hash with: btoa('your-new-password')
 const ADMIN_TOKEN_KEY = 'aval_admin_session';
-const CORRECT_HASH    = btoa('aval2025');   // Change this password!
+const CORRECT_HASH    = btoa('aval2026'); 
 
 document.addEventListener('DOMContentLoaded', () => {
   AdminPage.init();
@@ -273,7 +273,12 @@ const AdminPage = {
             </div>
             <div class="form-group">
               <label class="form-label">Precio *</label>
-              <input id="aPrice" class="form-control" type="text" placeholder="Ej: U$S 150.000 o $ 28.000">
+              <div style="display:flex; gap:8px;">
+                <select id="aMoneda" class="form-control" style="width:100px; flex-shrink:0;">
+              <option value="$">$ (Pesos Uruguayos)</option>
+              <option value="U$S">U$S (Dólares)</option>
+                </select>
+                <input id="aPrice" class="form-control" type="text" placeholder="Ej: 25.000">
             </div>
           </div>
 
@@ -423,6 +428,7 @@ const AdminPage = {
     const title  = Form.val('aTitle');
     const tipo   = Form.val('aTipo');
     const price  = Form.val('aPrice');
+    const moneda = Form.val('aMoneda');
     const img    = Form.val('aImg');
     const link   = Form.val('aLink');
     const desc   = Form.val('aDesc');
@@ -441,7 +447,7 @@ const AdminPage = {
       .filter(Boolean);
     const photos = [img, ...extraPhotos];
 
-    Store.add({ title, tipo, price, img, link, desc, zone, barrio, mapUrl, photos });
+    Store.add({ title, tipo, price, moneda, img, link, desc, zone, barrio, mapUrl, photos });
     Toast.success('✅ Publicación agregada correctamente');
     this._renderSection('properties');
     document.querySelectorAll('[data-section]').forEach(b =>

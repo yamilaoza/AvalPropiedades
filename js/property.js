@@ -26,8 +26,8 @@ const PropertyPage = {
 
     this._set('breadcrumbTitle', p.title);
     this._set('detailTitle',     p.title);
-    this._set('detailPrice',     p.price);
-    this._set('sidebarPrice',    p.price);
+    this._set('detailPrice',     `${p.moneda || ''} ${p.price}`);
+    this._set('sidebarPrice',    `${p.moneda || ''} ${p.price}`);
     this._set('sidebarTipo',     p.tipo === 'venta' ? 'En venta' : 'En alquiler');
     this._set('detailDesc',      p.desc || 'Consultá más detalles comunicándote con nosotros.');
     this._set('detailZone',         p.zone   || '—');
