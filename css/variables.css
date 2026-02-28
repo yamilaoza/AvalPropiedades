@@ -51,7 +51,7 @@ ul { list-style:none; }
 .section--white { background: #ffffff; }
 .section--sky   { background: #eff6ff; }
 
-.section__tag { display:block; font-size:11px; font-weight:600; letter-spacing:2.5px; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
+.section__tag { display:block; font-size:14px; font-weight:600; letter-spacing:2.5px; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
 .section--dark .section__tag { color:#93c5fd; }
 
 .section__title { font-family:var(--font-display); font-size:clamp(22px,3vw,38px); font-weight:700; color:var(--gray-800); line-height:1.15; margin-bottom:10px; }
