@@ -94,10 +94,12 @@ const PropertyPage = {
     <button class="carousel__arrow carousel__arrow--next" id="carouselNext">&#8250;</button>
     <div class="carousel__counter" id="carouselCounter">1 / ${totalSlides}</div>` : '';
 
-  wrap.innerHTML = `
+    wrap.innerHTML = `
     <div class="carousel">
-      <div class="carousel__track" id="carouselTrack">${photoSlides}${videoSlide}</div>
-      ${arrowsHTML}${dotsHTML}
+      <div class="carousel__track" id="carouselTrack">
+        ${photoSlides}${videoSlide}
+        ${arrowsHTML}${dotsHTML}
+      </div>
     </div>`;
 
   if (totalSlides > 1) {
