@@ -194,6 +194,7 @@
   color: var(--gray-600);
   line-height: 1.8;
   margin-bottom: 24px;
+  white-space: pre-wrap;
 }
 
 /* Feature chips */

@@ -7,7 +7,7 @@
 // ── CONFIG ──
 // To change the password: replace this hash with: btoa('your-new-password')
 const ADMIN_TOKEN_KEY = 'aval_admin_session';
-const CORRECT_HASH    = btoa('aval2026'); 
+const CORRECT_HASH = btoa('aval2026');
 
 document.addEventListener('DOMContentLoaded', () => {
   AdminPage.init();
@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const AdminPage = {
   currentSection: 'dashboard',
+  editingId: null,
 
   init() {
     if (this._isLoggedIn()) {
@@ -24,7 +25,6 @@ const AdminPage = {
     }
     this._bindLogin();
     this._bindSidebar();
-    this._bindAddForm();
   },
 
   /* ── AUTH ── */
@@ -81,6 +81,11 @@ const AdminPage = {
       });
     });
   },
+
+  _setActiveNav(name) {
+  document.querySelectorAll('[data-section]').forEach(b =>
+    b.classList.toggle('admin-sidebar__link--active', b.dataset.section === name));
+},
 
   _renderSection(name) {
     this.currentSection = name;
@@ -171,7 +176,8 @@ const AdminPage = {
                 <td>${p.price}</td>
                 <td>
                   <div class="admin-table__actions">
-                    <a class="admin-action-btn" href="../pages/property.html?id=${p.id}" target="_blank" title="Ver">👁️</a>
+                    <a class="admin-action-btn" href="../pages/property.html?id=${p.id}" target="_blank" title="Ver">🌐</a>
+                    <button class="admin-action-btn" onclick="AdminPage.editProperty(${p.id})" title="Editar" style="font-size:15px;">✏️</button>
                     <button class="admin-action-btn admin-action-btn--del" onclick="AdminPage.deleteProperty(${p.id})" title="Eliminar">🗑️</button>
                   </div>
                 </td>
@@ -240,7 +246,8 @@ const AdminPage = {
               <td>${p.price}</td>
               <td>
                 <div class="admin-table__actions">
-                  <a class="admin-action-btn" href="../pages/property.html?id=${p.id}" target="_blank" title="Ver">👁️</a>
+                  <a class="admin-action-btn" href="../pages/property.html?id=${p.id}" target="_blank" title="Ver">🌐</a>
+                  <button class="admin-action-btn" onclick="AdminPage.editProperty(${p.id})" title="Editar" style="font-size:15px;">✏️</button>
                   <button class="admin-action-btn admin-action-btn--del" onclick="AdminPage.deleteProperty(${p.id})" title="Eliminar">🗑️</button>
                 </div>
               </td>
@@ -250,209 +257,271 @@ const AdminPage = {
   },
 
   /* ── ADD FORM ── */
-  _renderAddForm(el) {
-    el.innerHTML = `
-      <div class="admin-form-card">
-        <div class="admin-form-card__header">
-          <div class="admin-form-card__title">Nueva publicación</div>
+_renderAddForm(el) {
+  this.editingId = null;
+  this._renderForm(el, null);
+},
+
+_barrioOptions(selected = '') {
+  const groups = {
+    'Montevideo': ['Aguada','Aires Puros','Atahualpa','Bella Vista','Blanqueada','Brazo Oriental','Buceo','Carrasco','Carrasco Norte','Centro','Cerrito','Ciudad Vieja','Colón','Conciliación','Cordón','Flor de Maroñas','Goes','Jacinto Vera','La Comercial','La Teja','Larrañaga','Las Acacias','Lezica','Malvín','Malvín Norte','Maroñas','Mercado Modelo','Montevideo Viejo','Nuevo París','Palermo','Parque Batlle','Parque Rodó','Paso de las Duranas','Peñarol','Pocitos','Pocitos Nuevo','Prado','Punta Carretas','Punta Gorda','Reducto','Reus','Sayago','Step','Tres Cruces','Unión','Villa Española','Villa Muñoz','Villanueva'],
+    'Ciudad de la Costa': ['Ciudad de la Costa','Shangrila','El Pinar','Solymar','Lagomar','Salinas','Neptunia','Zinnia','Bello Horizonte','Lomas de Solymar','Parque Miramar','Colinas de Solymar'],
+    'Otros': ['Otros'],
+  };
+  let html = `<option value="">— Seleccionar barrio —</option>`;
+  for (const [label, barrios] of Object.entries(groups)) {
+    html += `<optgroup label="${label}">`;
+    html += barrios.map(b => `<option value="${b}" ${b === selected ? 'selected' : ''}>${b}</option>`).join('');
+    html += `</optgroup>`;
+  }
+  return html;
+},
+
+_renderForm(el, prop) {
+  const isEdit = !!prop;
+  const p = prop || {};
+  el.innerHTML = `
+    <div class="admin-form-card">
+      <div class="admin-form-card__header">
+        <div class="admin-form-card__title">${isEdit ? 'Editar: ' + p.title : 'Nueva publicación'}</div>
+      </div>
+      <div class="admin-form-card__body">
+
+        <div class="form-group">
+          <label class="form-label">Título de la propiedad *</label>
+          <input id="aTitle" class="form-control" type="text" value="${p.title || ''}" placeholder="Ej: AVAL Venta Apto Centro 2 Dorm">
         </div>
-        <div class="admin-form-card__body">
 
+        <div class="admin-form-grid">
           <div class="form-group">
-            <label class="form-label">Título de la propiedad *</label>
-            <input id="aTitle" class="form-control" type="text" placeholder="Ej: AVAL Venta Apto Centro 2 Dorm">
+            <label class="form-label">Tipo *</label>
+            <select id="aTipo" class="form-control">
+              <option value="venta" ${(p.tipo||'venta')==='venta' ? 'selected':''}>Venta</option>
+              <option value="alquiler" ${p.tipo==='alquiler' ? 'selected':''}>Alquiler</option>
+            </select>
           </div>
-
-          <div class="admin-form-grid">
-            <div class="form-group">
-              <label class="form-label">Tipo *</label>
-              <select id="aTipo" class="form-control">
-                <option value="venta">Venta</option>
-                <option value="alquiler">Alquiler</option>
+          <div class="form-group">
+            <label class="form-label">Precio *</label>
+            <div style="display:flex;gap:8px;">
+              <select id="aMoneda" class="form-control" style="width:110px;flex-shrink:0;">
+                <option value="$" ${(p.moneda||'$')==='$' ? 'selected':''}>$ (Pesos)</option>
+                <option value="U$S" ${p.moneda==='U$S' ? 'selected':''}>U$S (Dólares)</option>
               </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Precio *</label>
-              <div style="display:flex; gap:8px;">
-                <select id="aMoneda" class="form-control" style="width:100px; flex-shrink:0;">
-              <option value="$">$ (Pesos Uruguayos)</option>
-              <option value="U$S">U$S (Dólares)</option>
-                </select>
-                <input id="aPrice" class="form-control" type="text" placeholder="Ej: 25.000">
+              <input id="aPrice" class="form-control" type="text" value="${p.price || ''}" placeholder="Ej: 25.000">
             </div>
           </div>
-
-          <div class="admin-form-grid">
-            <div class="form-group">
-              <label class="form-label">Zona</label>
-              <input id="aZone" class="form-control" type="text" placeholder="Ej: Pocitos, Montevideo">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Barrio</label>
-              <select id="aBarrio" class="form-control">
-                <option value="">— Seleccionar barrio —</option>
-                <optgroup label="Montevideo">
-                <option value="Aguada">Aguada</option>
-                <option value="Aires Puros">Aires Puros</option>
-                <option value="Atahualpa">Atahualpa</option>
-                <option value="Bella Vista">Bella Vista</option>
-                <option value="Blanqueada">Blanqueada</option>
-                <option value="Brazo Oriental">Brazo Oriental</option>
-                <option value="Buceo">Buceo</option>
-                <option value="Carrasco">Carrasco</option>
-                <option value="Carrasco Norte">Carrasco Norte</option>
-                <option value="Centro">Centro</option>
-                <option value="Cerrito">Cerrito</option>
-                <option value="Ciudad Vieja">Ciudad Vieja</option>
-                <option value="Colón">Colón</option>
-                <option value="Conciliación">Conciliación</option>
-                <option value="Cordón">Cordón</option>
-                <option value="Flor de Maroñas">Flor de Maroñas</option>
-                <option value="Goes">Goes</option>
-                <option value="Jacinto Vera">Jacinto Vera</option>
-                <option value="La Comercial">La Comercial</option>
-                <option value="La Teja">La Teja</option>
-                <option value="Larrañaga">Larrañaga</option>
-                <option value="Las Acacias">Las Acacias</option>
-                <option value="Lezica">Lezica</option>
-                <option value="Malvín">Malvín</option>
-                <option value="Malvín Norte">Malvín Norte</option>
-                <option value="Maroñas">Maroñas</option>
-                <option value="Mercado Modelo">Mercado Modelo</option>
-                <option value="Montevideo Viejo">Montevideo Viejo</option>
-                <option value="Nuevo París">Nuevo París</option>
-                <option value="Palermo">Palermo</option>
-                <option value="Parque Batlle">Parque Batlle</option>
-                <option value="Parque Rodó">Parque Rodó</option>
-                <option value="Paso de las Duranas">Paso de las Duranas</option>
-                <option value="Peñarol">Peñarol</option>
-                <option value="Pocitos">Pocitos</option>
-                <option value="Pocitos Nuevo">Pocitos Nuevo</option>
-                <option value="Prado">Prado</option>
-                <option value="Punta Carretas">Punta Carretas</option>
-                <option value="Punta Gorda">Punta Gorda</option>
-                <option value="Reducto">Reducto</option>
-                <option value="Reus">Reus</option>
-                <option value="Sayago">Sayago</option>
-                <option value="Step">Step</option>
-                <option value="Tres Cruces">Tres Cruces</option>
-                <option value="Unión">Unión</option>
-                <option value="Villa Española">Villa Española</option>
-                <option value="Villa Muñoz">Villa Muñoz</option>
-                <option value="Villanueva">Villanueva</option>
-                </optgroup>
-                <optgroup label="Ciudad de la Costa">
-                <option value="Ciudad de la Costa">Ciudad de la Costa</option>
-                <option value="Shangrila">Shangrila</option>
-                <option value="El Pinar">El Pinar</option>
-                <option value="Solymar">Solymar</option>
-                <option value="Lagomar">Lagomar</option>
-                <option value="Salinas">Salinas</option>
-                <option value="Neptunia">Neptunia</option>
-                <option value="Zinnia">Zinnia</option>
-                <option value="Bello Horizonte">Bello Horizonte</option>
-                <option value="Lomas de Solymar">Lomas de Solymar</option>
-                <option value="Parque Miramar">Parque Miramar</option>
-                <option value="Colinas de Solymar">Colinas de Solymar</option>
-                </optgroup>
-                <optgroup label="Otros">
-                <option value="Otros">Otros</option>
-                </optgroup>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Imagen de portada (miniatura) *</label>
-            <input id="aImg" class="form-control" type="text" placeholder="Click derecho → Copiar dirección de imagen en ML/Gallito">
-            <small style="color:var(--gray-400);font-size:12px;margin-top:4px;display:block;">Esta imagen se muestra en la lista de propiedades.</small>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Fotos adicionales del carrusel</label>
-            <div id="photosContainer">
-              <div class="photo-input-row" style="display:flex;gap:8px;margin-bottom:8px;">
-                <input class="form-control photo-input" type="text" placeholder="URL de foto 2">
-                <button type="button" class="btn btn--danger btn--sm" onclick="this.parentElement.remove()">✕</button>
-              </div>
-            </div>
-            <button type="button" class="btn btn--ghost btn--sm" onclick="AdminPage.addPhotoField()" style="margin-top:4px;">+ Agregar foto</button>
-            <small style="color:var(--gray-400);font-size:12px;margin-top:6px;display:block;">Copiá el link de cada foto desde MercadoLibre/Gallito (click derecho → copiar dirección de imagen).</small>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Link de la publicación *</label>
-            <input id="aLink" class="form-control" type="text" placeholder="URL completa de MercadoLibre o Gallito">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Ubicación en Google Maps (embed URL)</label>
-            <input id="aMapUrl" class="form-control" type="text" placeholder="https://www.google.com/maps/embed?pb=...">
-            <small style="color:var(--gray-400);font-size:12px;margin-top:4px;display:block;">
-              En Google Maps: buscá la dirección → Compartir → Incorporar mapa → copiá el link del src del iframe.
-            </small>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Descripción</label>
-            <textarea id="aDesc" class="form-control" placeholder="Descripción breve de la propiedad..."></textarea>
-          </div>
-
-          <div style="display:flex;gap:12px;margin-top:8px;">
-            <button class="btn btn--primary" onclick="AdminPage.saveProperty()">Guardar publicación</button>
-            <button class="btn btn--ghost" onclick="AdminPage._renderSection('properties')">Cancelar</button>
-          </div>
-
         </div>
-      </div>`;
-  },
 
-  addPhotoField() {
-    const container = document.getElementById('photosContainer');
-    if (!container) return;
-    const row = document.createElement('div');
-    row.className = 'photo-input-row';
-    row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;';
-    row.innerHTML = `
-      <input class="form-control photo-input" type="text" placeholder="URL de foto">
-      <button type="button" class="btn btn--danger btn--sm" onclick="this.parentElement.remove()">✕</button>`;
-    container.appendChild(row);
-  },
+        <div class="admin-form-grid">
+          <div class="form-group">
+            <label class="form-label">Zona</label>
+            <input id="aZone" class="form-control" type="text" value="${p.zone || ''}" placeholder="Ej: Pocitos, Montevideo">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Barrio</label>
+            <select id="aBarrio" class="form-control">${this._barrioOptions(p.barrio || '')}</select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Imagen de portada *</label>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+            <input id="aImg" class="form-control" type="text" value="${p.img || ''}" placeholder="URL o subí desde tu computadora →">
+            <label class="btn btn--ghost btn--sm" style="cursor:pointer;white-space:nowrap;flex-shrink:0;">
+              📁 Subir
+              <input type="file" accept="image/*" style="display:none" onchange="AdminPage._loadFile(this,'aImg','aImgPreview')">
+            </label>
+          </div>
+          <div id="aImgPreview">${p.img ? `<img src="${p.img}" style="max-height:80px;border-radius:8px;border:1px solid var(--gray-200);">` : ''}</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Fotos del carrusel <span style="font-weight:400;color:var(--gray-400)">(arrastrá para reordenar)</span></label>
+          <div id="photosContainer">
+            ${((p.photos || []).slice(1)).map(url => this._photoRow(url)).join('')}
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+            <button type="button" class="btn btn--ghost btn--sm" onclick="AdminPage.addPhotoUrl()">+ URL de foto</button>
+            <label class="btn btn--ghost btn--sm" style="cursor:pointer;">
+              📁 Subir desde computadora
+              <input type="file" accept="image/*" multiple style="display:none" onchange="AdminPage._loadMultipleFiles(this)">
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Video de YouTube (opcional)</label>
+          <input id="aYoutube" class="form-control" type="text" value="${p.youtube || ''}" placeholder="https://www.youtube.com/watch?v=...">
+          <small style="color:var(--gray-400);font-size:12px;margin-top:4px;display:block;">Se muestra al final del carrusel de fotos.</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Link de la publicación *</label>
+          <input id="aLink" class="form-control" type="text" value="${p.link || ''}" placeholder="URL completa de MercadoLibre o Gallito">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Ubicación en Google Maps (embed URL)</label>
+          <input id="aMapUrl" class="form-control" type="text" value="${p.mapUrl || ''}" placeholder="https://www.google.com/maps/embed?pb=...">
+          <small style="color:var(--gray-400);font-size:12px;margin-top:4px;display:block;">Google Maps → Compartir → Incorporar mapa → copiá el src del iframe.</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <textarea id="aDesc" class="form-control" placeholder="Descripción de la propiedad...">${p.desc || ''}</textarea>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button class="btn btn--primary" onclick="AdminPage.saveProperty()">${isEdit ? '💾 Guardar cambios' : 'Guardar publicación'}</button>
+          <button class="btn btn--ghost" onclick="AdminPage._renderSection('properties')">Cancelar</button>
+        </div>
+
+      </div>
+    </div>`;
+  this._initPhotoDragSort();
+},
+
+_photoRow(url = '') {
+  const preview = url ? `<img src="${url}" style="width:48px;height:36px;object-fit:cover;border-radius:5px;flex-shrink:0;" onerror="this.style.display='none'">` : '';
+  return `
+    <div class="photo-input-row" draggable="true" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:grab;background:#f8fafc;border:1px solid var(--gray-200);border-radius:8px;padding:6px 8px;">
+      <span style="color:var(--gray-400);font-size:16px;user-select:none;">⠿</span>
+      ${preview}
+      <input class="form-control photo-input" type="text" value="${url}" placeholder="URL de foto" style="flex:1;">
+      <label class="btn btn--ghost btn--sm" style="cursor:pointer;flex-shrink:0;padding:5px 8px;" title="Subir desde computadora">
+        📁
+        <input type="file" accept="image/*" style="display:none" onchange="AdminPage._loadFileIntoRow(this)">
+      </label>
+      <button type="button" class="btn btn--danger btn--sm" onclick="this.closest('.photo-input-row').remove()" style="flex-shrink:0;">✕</button>
+    </div>`;
+},
+
+addPhotoUrl() {
+  const container = document.getElementById('photosContainer');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.innerHTML = this._photoRow('');
+  container.appendChild(div.firstElementChild);
+  this._initPhotoDragSort();
+},
+
+_loadFile(input, targetId, previewId) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = e.target.result;
+    const t = document.getElementById(targetId);
+    if (t) t.value = data;
+    const prev = document.getElementById(previewId);
+    if (prev) prev.innerHTML = `<img src="${data}" style="max-height:80px;border-radius:8px;border:1px solid var(--gray-200);">`;
+  };
+  reader.readAsDataURL(file);
+},
+
+_loadMultipleFiles(input) {
+  const container = document.getElementById('photosContainer');
+  if (!container) return;
+  [...input.files].forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const div = document.createElement('div');
+      div.innerHTML = this._photoRow(e.target.result);
+      container.appendChild(div.firstElementChild);
+      this._initPhotoDragSort();
+    };
+    reader.readAsDataURL(file);
+  });
+},
+
+_loadFileIntoRow(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const row = input.closest('.photo-input-row');
+    const textInput = row.querySelector('.photo-input');
+    if (textInput) textInput.value = e.target.result;
+    let img = row.querySelector('img');
+    if (!img) {
+      img = document.createElement('img');
+      img.style.cssText = 'width:48px;height:36px;object-fit:cover;border-radius:5px;flex-shrink:0;';
+      textInput?.before(img);
+    }
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+},
+
+_initPhotoDragSort() {
+  const container = document.getElementById('photosContainer');
+  if (!container) return;
+  let dragEl = null;
+  container.addEventListener('dragstart', e => {
+    dragEl = e.target.closest('.photo-input-row');
+    if (dragEl) { setTimeout(() => dragEl.style.opacity = '0.4', 0); e.dataTransfer.effectAllowed = 'move'; }
+  });
+  container.addEventListener('dragend', () => { if (dragEl) { dragEl.style.opacity = ''; dragEl = null; } });
+  container.addEventListener('dragover', e => {
+    e.preventDefault();
+    const target = e.target.closest('.photo-input-row');
+    if (!target || target === dragEl) return;
+    const after = e.clientY > target.getBoundingClientRect().top + target.getBoundingClientRect().height / 2;
+    container.insertBefore(dragEl, after ? target.nextSibling : target);
+  });
+},
 
   _bindAddForm() {
     // Form is dynamically rendered, binding happens via onclick on the button
   },
 
+  editProperty(id) {
+  const prop = Store.getById(id);
+  if (!prop) return;
+  this.editingId = id;
+  const content = document.getElementById('adminContent');
+  const title   = document.getElementById('adminTitle');
+  if (title) title.textContent = 'Editar publicación';
+  this._renderForm(content, prop);
+},
+
   /* ── CRUD ── */
-  saveProperty() {
-    const title  = Form.val('aTitle');
-    const tipo   = Form.val('aTipo');
-    const price  = Form.val('aPrice');
-    const moneda = Form.val('aMoneda');
-    const img    = Form.val('aImg');
-    const link   = Form.val('aLink');
-    const desc   = Form.val('aDesc');
-    const zone   = Form.val('aZone');
-    const barrio = Form.val('aBarrio');
-    const mapUrl = Form.val('aMapUrl');
+saveProperty() {
+  const title   = Form.val('aTitle');
+  const tipo    = Form.val('aTipo');
+  const price   = Form.val('aPrice');
+  const moneda  = Form.val('aMoneda');
+  const img     = Form.val('aImg');
+  const link    = Form.val('aLink');
+  const desc    = Form.val('aDesc');
+  const zone    = Form.val('aZone');
+  const barrio  = Form.val('aBarrio');
+  const mapUrl  = Form.val('aMapUrl');
+  const youtube = Form.val('aYoutube');
 
-    if (!title || !price || !img || !link) {
-      Toast.error('Completá los campos obligatorios (*)');
-      return;
-    }
+  if (!title || !price || !img || !link) {
+    Toast.error('Completá los campos obligatorios (*)'); return;
+  }
 
-    // Collect extra photos
-    const extraPhotos = [...document.querySelectorAll('.photo-input')]
-      .map(i => i.value.trim())
-      .filter(Boolean);
-    const photos = [img, ...extraPhotos];
+  const extraPhotos = [...document.querySelectorAll('.photo-input')]
+    .map(i => i.value.trim()).filter(Boolean);
+  const photos = [img, ...extraPhotos];
+  const data = { title, tipo, price, moneda, img, link, desc, zone, barrio, mapUrl, photos, youtube };
 
-    Store.add({ title, tipo, price, moneda, img, link, desc, zone, barrio, mapUrl, photos });
-    Toast.success('✅ Publicación agregada correctamente');
-    this._renderSection('properties');
-    document.querySelectorAll('[data-section]').forEach(b =>
-      b.classList.toggle('admin-sidebar__link--active', b.dataset.section === 'properties'));
-  },
+  if (this.editingId) {
+    const all = Store.getAll();
+    const idx = all.findIndex(p => p.id === this.editingId);
+    if (idx !== -1) { all[idx] = { ...all[idx], ...data }; Store.save(all); }
+    Toast.success('✅ Publicación actualizada');
+    this.editingId = null;
+  } else {
+    Store.add(data);
+    Toast.success('✅ Publicación agregada');
+  }
+
+  this._renderSection('properties');
+  this._setActiveNav('properties');
+},
 
   deleteProperty(id) {
     if (!confirm('¿Seguro que querés eliminar esta publicación?')) return;

@@ -60,73 +60,82 @@ const PropertyPage = {
 
   /* ── CAROUSEL ── */
   _renderCarousel() {
-    const p      = this.prop;
-    const photos = (p.photos && p.photos.length) ? p.photos : [p.img];
-    const wrap   = document.getElementById('carouselWrap');
-    if (!wrap) return;
+  const p      = this.prop;
+  const photos = (p.photos && p.photos.length) ? p.photos : [p.img];
+  const wrap   = document.getElementById('carouselWrap');
+  if (!wrap) return;
 
-    this.currentSlide = 0;
+  this.currentSlide = 0;
+  const ytEmbed   = p.youtube ? this._youtubeEmbedUrl(p.youtube) : null;
+  const totalSlides = photos.length + (ytEmbed ? 1 : 0);
 
-    // Build slides
-    const slidesHTML = photos.map((src, i) => `
-      <div class="carousel__slide ${i === 0 ? 'carousel__slide--active' : ''}" data-index="${i}">
-        <img src="${src}"
-             alt="Foto ${i + 1} de ${p.title}"
-             class="carousel__img"
-             onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80'">
-      </div>`).join('');
+  const photoSlides = photos.map((src, i) => `
+    <div class="carousel__slide ${i === 0 ? 'carousel__slide--active' : ''}" data-index="${i}">
+      <img src="${src}" alt="Foto ${i+1}" class="carousel__img"
+           onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80'">
+    </div>`).join('');
 
-    // Build dots
-    const dotsHTML = photos.length > 1
-      ? `<div class="carousel__dots">
-           ${photos.map((_, i) => `<button class="carousel__dot ${i === 0 ? 'carousel__dot--active' : ''}" data-dot="${i}" aria-label="Foto ${i+1}"></button>`).join('')}
-         </div>`
-      : '';
+  const videoSlide = ytEmbed ? `
+    <div class="carousel__slide" data-index="${photos.length}">
+      <iframe src="${ytEmbed}" class="carousel__img" style="border:none;"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen title="Video de la propiedad"></iframe>
+    </div>` : '';
 
-    // Build arrows (only if more than 1 photo)
-    const arrowsHTML = photos.length > 1 ? `
-      <button class="carousel__arrow carousel__arrow--prev" id="carouselPrev" aria-label="Foto anterior">&#8249;</button>
-      <button class="carousel__arrow carousel__arrow--next" id="carouselNext" aria-label="Foto siguiente">&#8250;</button>
-      <div class="carousel__counter" id="carouselCounter">1 / ${photos.length}</div>` : '';
+  const dotsHTML = totalSlides > 1 ? `
+    <div class="carousel__dots">
+      ${Array.from({length: totalSlides}, (_, i) =>
+        `<button class="carousel__dot ${i === 0 ? 'carousel__dot--active' : ''}" data-dot="${i}" aria-label="Slide ${i+1}"></button>`
+      ).join('')}
+    </div>` : '';
 
-    wrap.innerHTML = `
-      <div class="carousel">
-        <div class="carousel__track" id="carouselTrack">${slidesHTML}</div>
-        ${arrowsHTML}
-        ${dotsHTML}
-      </div>`;
+  const arrowsHTML = totalSlides > 1 ? `
+    <button class="carousel__arrow carousel__arrow--prev" id="carouselPrev">&#8249;</button>
+    <button class="carousel__arrow carousel__arrow--next" id="carouselNext">&#8250;</button>
+    <div class="carousel__counter" id="carouselCounter">1 / ${totalSlides}</div>` : '';
 
-    if (photos.length > 1) {
-      document.getElementById('carouselPrev')?.addEventListener('click', () => this._prevSlide());
-      document.getElementById('carouselNext')?.addEventListener('click', () => this._nextSlide());
-      wrap.querySelectorAll('[data-dot]').forEach(dot => {
-        dot.addEventListener('click', () => this._goToSlide(Number(dot.dataset.dot)));
-      });
+  wrap.innerHTML = `
+    <div class="carousel">
+      <div class="carousel__track" id="carouselTrack">${photoSlides}${videoSlide}</div>
+      ${arrowsHTML}${dotsHTML}
+    </div>`;
 
-      // Touch/swipe support
-      let touchStartX = 0;
-      const track = document.getElementById('carouselTrack');
-      track?.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
-      track?.addEventListener('touchend',   e => {
-        const diff = touchStartX - e.changedTouches[0].clientX;
-        if (Math.abs(diff) > 40) diff > 0 ? this._nextSlide() : this._prevSlide();
-      });
-    }
-  },
+  if (totalSlides > 1) {
+    document.getElementById('carouselPrev')?.addEventListener('click', () => this._prevSlide());
+    document.getElementById('carouselNext')?.addEventListener('click', () => this._nextSlide());
+    wrap.querySelectorAll('[data-dot]').forEach(dot =>
+      dot.addEventListener('click', () => this._goToSlide(Number(dot.dataset.dot))));
+    let touchStartX = 0;
+    const track = document.getElementById('carouselTrack');
+    track?.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    track?.addEventListener('touchend',   e => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 40) diff > 0 ? this._nextSlide() : this._prevSlide();
+    });
+  }
+},
 
   _goToSlide(index) {
-    const photos = (this.prop.photos && this.prop.photos.length) ? this.prop.photos : [this.prop.img];
-    const total  = photos.length;
-    this.currentSlide = (index + total) % total;
+  const p     = this.prop;
+  const photos = (p.photos && p.photos.length) ? p.photos : [p.img];
+  const total  = photos.length + (p.youtube ? 1 : 0);
+  this.currentSlide = (index + total) % total;
+  document.querySelectorAll('.carousel__slide').forEach((s, i) =>
+    s.classList.toggle('carousel__slide--active', i === this.currentSlide));
+  document.querySelectorAll('.carousel__dot').forEach((d, i) =>
+    d.classList.toggle('carousel__dot--active', i === this.currentSlide));
+  const counter = document.getElementById('carouselCounter');
+  if (counter) counter.textContent = `${this.currentSlide + 1} / ${total}`;
+},
 
-    document.querySelectorAll('.carousel__slide').forEach((s, i) =>
-      s.classList.toggle('carousel__slide--active', i === this.currentSlide));
-    document.querySelectorAll('.carousel__dot').forEach((d, i) =>
-      d.classList.toggle('carousel__dot--active', i === this.currentSlide));
-
-    const counter = document.getElementById('carouselCounter');
-    if (counter) counter.textContent = `${this.currentSlide + 1} / ${total}`;
-  },
+_youtubeEmbedUrl(url) {
+  try {
+    const u = new URL(url);
+    let id = u.searchParams.get('v');
+    if (!id) id = u.pathname.split('/').pop();
+    return id ? `https://www.youtube.com/embed/${id}` : null;
+  } catch { return null; }
+},
 
   _prevSlide() { this._goToSlide(this.currentSlide - 1); },
   _nextSlide() { this._goToSlide(this.currentSlide + 1); },
