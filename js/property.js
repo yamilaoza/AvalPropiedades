@@ -17,6 +17,11 @@ async init() {
   if (!this.prop) { this._renderNotFound(); return; }
   this._renderAll();
   this._bindTabs();
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === "ArrowLeft")  this._prevSlide();
+    if (e.key === "ArrowRight") this._nextSlide();
+  });
 },
 
   /* ── RENDER ALL ── */
