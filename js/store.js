@@ -1,74 +1,61 @@
-/**
- * store.js — Central Data Store
- * All property data lives here. Uses localStorage for persistence.
- */
+const firebaseConfig = {
+  apiKey: "AIzaSyBjRoKwgKm-5acIGqx4Kw1KTgtCSJSnTZk",
+  authDomain: "aval-propiedades.firebaseapp.com",
+  projectId: "aval-propiedades",
+  storageBucket: "aval-propiedades.firebasestorage.app",
+  messagingSenderId: "605225523291",
+  appId: "1:605225523291:web:d1cbd2698a775a5b8ac77e"
+};
 
-const STORAGE_KEY = 'aval_properties';
-
-const DEFAULT_PROPERTIES = [];
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+const COL = 'properties';
 
 const Store = {
-  /**
-   * Load all properties (from localStorage or defaults)
-   * @returns {Array}
-   */
-  getAll() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [...DEFAULT_PROPERTIES];
-    } catch {
-      return [...DEFAULT_PROPERTIES];
-    }
+
+  async getAll() {
+    const snap = await db.collection(COL).orderBy('order', 'asc').get();
+    return snap.docs.map(doc => ({ ...doc.data(), _docId: doc.id }));
   },
 
-  /**
-   * Get a single property by id
-   * @param {number} id
-   * @returns {Object|undefined}
-   */
-  getById(id) {
-    return this.getAll().find(p => p.id === Number(id));
+  async getById(id) {
+    const all = await this.getAll();
+    return all.find(p => String(p.id) === String(id));
   },
 
-  /**
-   * Save the full array back to localStorage
-   * @param {Array} props
-   */
-  save(props) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(props));
-  },
-
-  /**
-   * Add a new property
-   * @param {Object} prop — without id
-   * @returns {Object} — with generated id
-   */
-  add(prop) {
-    const props = this.getAll();
-    const newProp = { ...prop, id: Date.now() };
-    props.unshift(newProp);
-    this.save(props);
+  async add(prop) {
+    const all = await this.getAll();
+    const newProp = { ...prop, id: Date.now(), order: all.length };
+    await db.collection(COL).add(newProp);
     return newProp;
   },
 
-  /**
-   * Remove a property by id
-   * @param {number} id
-   */
-  remove(id) {
-    const props = this.getAll().filter(p => p.id !== Number(id));
-    this.save(props);
+  async remove(id) {
+    const all = await this.getAll();
+    const item = all.find(p => String(p.id) === String(id));
+    if (item?._docId) await db.collection(COL).doc(item._docId).delete();
   },
 
-  /**
-   * Filter properties
-   * @param {string} tipo   — 'todas' | 'venta' | 'alquiler'
-   * @param {string} query  — search string
-   * @param {string} barrio — '' means all
-   * @returns {Array}
-   */
-  filter(tipo = 'todas', query = '', barrio = '') {
-    let props = this.getAll();
+  async save(props) {
+    // Para reordenar — actualiza el campo order de cada uno
+    const batch = db.batch();
+    props.forEach((prop, i) => {
+      if (prop._docId) {
+        batch.update(db.collection(COL).doc(prop._docId), { order: i });
+      }
+    });
+    await batch.commit();
+  },
+
+  async updateOne(id, data) {
+    const all = await this.getAll();
+    const item = all.find(p => String(p.id) === String(id));
+    if (item?._docId) await db.collection(COL).doc(item._docId).update(data);
+  },
+
+  async filter(tipo = 'todas', query = '', barrio = '') {
+    let props = await this.getAll();
     if (tipo !== 'todas') props = props.filter(p => p.tipo === tipo);
     if (barrio) props = props.filter(p => (p.barrio || '') === barrio);
     if (query.trim()) {
@@ -83,44 +70,50 @@ const Store = {
     return props;
   },
 
-  /**
-   * Get all unique barrios sorted alphabetically
-   * @returns {string[]}
-   */
+  async getSimilar(id, tipo) {
+    const all = await this.getAll();
+    return all.filter(p => String(p.id) !== String(id) && p.tipo === tipo).slice(0, 3);
+  },
+
   getBarrios() {
     return [
-      // ── Montevideo ──
-      'Aguada', 'Aires Puros', 'Atahualpa', 'Bella Vista',
-      'Blanqueada', 'Brazo Oriental', 'Buceo', 'Carrasco', 'Carrasco Norte',
-      'Centro', 'Cerrito', 'Ciudad Vieja', 'Colón', 'Conciliación',
-      'Cordón', 'Flor de Maroñas', 'Goes', 'Jacinto Vera',
-      'La Comercial', 'La Teja', 'Larrañaga', 'Las Acacias',
-      'Lezica', 'Malvín', 'Malvín Norte', 'Maroñas',
-      'Mercado Modelo', 'Montevideo Viejo', 'Nuevo París',
-      'Palermo', 'Parque Batlle', 'Parque Rodó', 'Paso de las Duranas',
-      'Peñarol', 'Pocitos', 'Pocitos Nuevo', 'Prado',
-      'Punta Carretas', 'Punta Gorda', 'Reducto', 'Reus',
-      'Sayago', 'Step', 'Tres Cruces', 'Unión',
-      'Villa Española', 'Villa Muñoz', 'Villanueva',
-      // ── Ciudad de la Costa ──
-      'Ciudad de la Costa',
-      'Shangrila', 'El Pinar', 'Solymar', 'Lagomar',
-      'Salinas', 'Neptunia', 'Zinnia', 'Bello Horizonte',
-      'Lomas de Solymar', 'Parque Miramar', 'Colinas de Solymar',
-      // ── Otros ──
-      'Otros',
+      'Aguada','Aires Puros','Atahualpa','Bella Vista','Blanqueada','Brazo Oriental',
+      'Buceo','Carrasco','Carrasco Norte','Centro','Cerrito','Ciudad Vieja','Colón',
+      'Conciliación','Cordón','Flor de Maroñas','Goes','Jacinto Vera','La Comercial',
+      'La Teja','Larrañaga','Las Acacias','Lezica','Malvín','Malvín Norte','Maroñas',
+      'Mercado Modelo','Montevideo Viejo','Nuevo París','Palermo','Parque Batlle',
+      'Parque Rodó','Paso de las Duranas','Peñarol','Pocitos','Pocitos Nuevo','Prado',
+      'Punta Carretas','Punta Gorda','Reducto','Reus','Sayago','Step','Tres Cruces',
+      'Unión','Villa Española','Villa Muñoz','Villanueva',
+      'Ciudad de la Costa','Shangrila','El Pinar','Solymar','Lagomar','Salinas',
+      'Neptunia','Zinnia','Bello Horizonte','Lomas de Solymar','Parque Miramar',
+      'Colinas de Solymar','Otros',
     ];
   },
 
-  /**
-   * Get similar properties (same tipo, exclude current id)
-   * @param {number} id
-   * @param {string} tipo
-   * @returns {Array}
-   */
-  getSimilar(id, tipo) {
-    return this.getAll()
-      .filter(p => p.id !== Number(id) && p.tipo === tipo)
-      .slice(0, 3);
-  },
+  async uploadPhoto(file) {
+  // Comprime la imagen antes de subir
+  const compressed = await this._compressImage(file, 1400, 0.82);
+  const path = `photos/${Date.now()}_${file.name.replace(/[^a-z0-9.]/gi, '_')}`;
+  const ref = storage.ref(path);
+  await ref.put(compressed);
+  return await ref.getDownloadURL();
+},
+
+_compressImage(file, maxWidth, quality) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, maxWidth / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width  = img.width  * scale;
+      canvas.height = img.height * scale;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob => resolve(blob), 'image/jpeg', quality);
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  });
+},
 };

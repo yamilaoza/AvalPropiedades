@@ -18,18 +18,19 @@ const HomePage = {
     this._bindContactForm();
   },
 
-  render() {
-    const grid  = document.getElementById('propsGrid');
-    const count = document.getElementById('resultsCount');
-    if (!grid) return;
-    const props = Store.filter(this.currentFilter, this.currentQuery, this.currentBarrio);
-    if (count) count.textContent = `${props.length} propiedad${props.length !== 1 ? 'es' : ''}`;
-    if (!props.length) {
-      grid.innerHTML = `<p class="props-empty">No se encontraron propiedades con esos filtros.</p>`;
-      return;
-    }
-    grid.innerHTML = props.map(p => CardBuilder.build(p)).join('');
-  },
+async render() {
+  const grid  = document.getElementById('propsGrid');
+  const count = document.getElementById('resultsCount');
+  if (!grid) return;
+  grid.innerHTML = `<p class="props-empty" style="opacity:0.5;">Cargando propiedades...</p>`;
+  const props = await Store.filter(this.currentFilter, this.currentQuery, this.currentBarrio);
+  if (count) count.textContent = `${props.length} propiedad${props.length !== 1 ? 'es' : ''}`;
+  if (!props.length) {
+    grid.innerHTML = `<p class="props-empty">No se encontraron propiedades con esos filtros.</p>`;
+    return;
+  }
+  grid.innerHTML = props.map(p => CardBuilder.build(p)).join('');
+},
 
   _populateBarrioSelects() {
     const mvd = [

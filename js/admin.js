@@ -106,88 +106,63 @@ const AdminPage = {
   },
 
   /* ── DASHBOARD ── */
-  _renderDashboard(el) {
-    const all       = Store.getAll();
-    const ventas    = all.filter(p => p.tipo === 'venta').length;
-    const alquileres = all.filter(p => p.tipo === 'alquiler').length;
-
-    el.innerHTML = `
-      <div class="admin-stats">
-        <div class="admin-stat-card">
-          <span class="admin-stat-card__icon">🏠</span>
-          <div class="admin-stat-card__num">${all.length}</div>
-          <div class="admin-stat-card__label">Total publicaciones</div>
-        </div>
-        <div class="admin-stat-card">
-          <span class="admin-stat-card__icon">🏷️</span>
-          <div class="admin-stat-card__num">${ventas}</div>
-          <div class="admin-stat-card__label">En venta</div>
-        </div>
-        <div class="admin-stat-card">
-          <span class="admin-stat-card__icon">🔑</span>
-          <div class="admin-stat-card__num">${alquileres}</div>
-          <div class="admin-stat-card__label">En alquiler</div>
-        </div>
+async _renderDashboard(el) {
+  el.innerHTML = `<p style="padding:24px;color:var(--gray-400);">Cargando...</p>`;
+  const all        = await Store.getAll();
+  const ventas     = all.filter(p => p.tipo === 'venta').length;
+  const alquileres = all.filter(p => p.tipo === 'alquiler').length;
+  el.innerHTML = `
+    <div class="admin-stats">
+      <div class="admin-stat-card"><span class="admin-stat-card__icon">🏠</span><div class="admin-stat-card__num">${all.length}</div><div class="admin-stat-card__label">Total publicaciones</div></div>
+      <div class="admin-stat-card"><span class="admin-stat-card__icon">🏷️</span><div class="admin-stat-card__num">${ventas}</div><div class="admin-stat-card__label">En venta</div></div>
+      <div class="admin-stat-card"><span class="admin-stat-card__icon">🔑</span><div class="admin-stat-card__num">${alquileres}</div><div class="admin-stat-card__label">En alquiler</div></div>
+    </div>
+    <div class="admin-table-wrap">
+      <div class="admin-table-header">
+        <span class="admin-table-title">Últimas publicaciones</span>
+        <button class="btn btn--primary btn--sm" onclick="AdminPage._renderSection('add');AdminPage._setActiveNav('add')">+ Agregar</button>
       </div>
-      <div class="admin-table-wrap">
-        <div class="admin-table-header">
-          <span class="admin-table-title">Últimas publicaciones</span>
-          <button class="btn btn--primary btn--sm" onclick="AdminPage._renderSection('add');document.querySelectorAll('[data-section]').forEach(b=>b.classList.toggle('admin-sidebar__link--active',b.dataset.section==='add'))">+ Agregar</button>
-        </div>
-        ${this._buildTable(Store.getAll().slice(0, 6))}
-      </div>`;
-  },
+      ${this._buildTable(all.slice(0, 6))}
+    </div>`;
+},
 
   /* ── PROPERTIES LIST with drag to reorder ── */
-  _renderProperties(el) {
-    const all = Store.getAll();
-    el.innerHTML = `
-      <div class="admin-table-wrap">
-        <div class="admin-table-header">
-          <div>
-            <span class="admin-table-title">Todas las publicaciones (${all.length})</span>
-            <p style="font-size:12px;color:var(--gray-400);margin-top:4px;">
-              ☰ Arrastrá las filas para cambiar el orden en que aparecen en la página
-            </p>
-          </div>
-          <button class="btn btn--primary btn--sm"
-            onclick="AdminPage._renderSection('add');document.querySelectorAll('[data-section]').forEach(b=>b.classList.toggle('admin-sidebar__link--active',b.dataset.section==='add'))">
-            + Agregar
-          </button>
+async _renderProperties(el) {
+  el.innerHTML = `<p style="padding:24px;color:var(--gray-400);">Cargando...</p>`;
+  const all = await Store.getAll();
+  el.innerHTML = `
+    <div class="admin-table-wrap">
+      <div class="admin-table-header">
+        <div>
+          <span class="admin-table-title">Todas las publicaciones (${all.length})</span>
+          <p style="font-size:12px;color:var(--gray-400);margin-top:4px;">☰ Arrastrá las filas para cambiar el orden</p>
         </div>
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th style="width:32px;"></th>
-              <th>Imagen</th>
-              <th>Título</th>
-              <th>Tipo</th>
-              <th>Precio</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="sortableList">
-            ${all.map(p => `
-              <tr draggable="true" data-id="${p.id}" class="sortable-row" style="cursor:grab;">
-                <td style="color:var(--gray-400);font-size:18px;padding-left:16px;">⠿</td>
-                <td><img class="admin-table__thumb" src="${p.img}" alt="" onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=100&q=40'"></td>
-                <td><div class="admin-table__title">${p.title}</div></td>
-                <td><span class="admin-badge admin-badge--${p.tipo}">${p.tipo}</span></td>
-                <td>${p.price}</td>
-                <td>
-                  <div class="admin-table__actions">
-                    <a class="admin-action-btn" href="../pages/property.html?id=${p.id}" target="_blank" title="Ver">🌐</a>
-                    <button class="admin-action-btn" onclick="AdminPage.editProperty(${p.id})" title="Editar" style="font-size:15px;">✏️</button>
-                    <button class="admin-action-btn admin-action-btn--del" onclick="AdminPage.deleteProperty(${p.id})" title="Eliminar">🗑️</button>
-                  </div>
-                </td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>`;
-
-    this._initDragSort();
-  },
+        <button class="btn btn--primary btn--sm" onclick="AdminPage._renderSection('add');AdminPage._setActiveNav('add')">+ Agregar</button>
+      </div>
+      <table class="admin-table">
+        <thead><tr>
+          <th style="width:32px;"></th>
+          <th>Imagen</th><th>Título</th><th>Tipo</th><th>Precio</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="sortableList">
+          ${all.map(p => `
+            <tr draggable="true" data-id="${p.id}" class="sortable-row" style="cursor:grab;">
+              <td style="color:var(--gray-400);font-size:18px;padding-left:16px;">⠿</td>
+              <td><img class="admin-table__thumb" src="${p.img}" alt="" onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=100&q=40'"></td>
+              <td><div class="admin-table__title">${p.title}</div></td>
+              <td><span class="admin-badge admin-badge--${p.tipo}">${p.tipo}</span></td>
+              <td>${p.price}</td>
+              <td><div class="admin-table__actions">
+                <a class="admin-action-btn" href="../pages/property.html?id=${p.id}" target="_blank" title="Ver">🌐</a>
+                <button class="admin-action-btn" onclick="AdminPage.editProperty(${p.id})" title="Editar" style="font-size:15px;">✏️</button>
+                <button class="admin-action-btn admin-action-btn--del" onclick="AdminPage.deleteProperty(${p.id})" title="Eliminar">🗑️</button>
+              </div></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  this._initDragSort();
+},
 
   /* ── DRAG & DROP SORT ── */
   _initDragSort() {
@@ -202,17 +177,15 @@ const AdminPage = {
       e.dataTransfer.effectAllowed = 'move';
     });
 
-    tbody.addEventListener('dragend', e => {
-      dragRow.style.opacity = '';
-      dragRow = null;
-      // Persist new order
-      const ids = [...tbody.querySelectorAll('tr[data-id]')].map(r => Number(r.dataset.id));
-      const all = Store.getAll();
-      const sorted = ids.map(id => all.find(p => p.id === id)).filter(Boolean);
-      // Keep any items not in view (shouldn't happen but safety)
-      Store.save(sorted);
-      Toast.success('✅ Orden guardado');
-    });
+tbody.addEventListener('dragend', async e => {
+  dragRow.style.opacity = '';
+  dragRow = null;
+  const ids = [...tbody.querySelectorAll('tr[data-id]')].map(r => Number(r.dataset.id));
+  const all = await Store.getAll();
+  const sorted = ids.map(id => all.find(p => p.id === id)).filter(Boolean);
+  await Store.save(sorted);
+  Toast.success('✅ Orden guardado');
+});
 
     tbody.addEventListener('dragover', e => {
       e.preventDefault();
@@ -405,52 +378,63 @@ addPhotoUrl() {
   this._initPhotoDragSort();
 },
 
-_loadFile(input, targetId, previewId) {
+async _loadFile(input, targetId, previewId) {
   const file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const data = e.target.result;
+  const btn = input.closest('label');
+  if (btn) btn.textContent = '⏳ Subiendo...';
+  try {
+    const url = await Store.uploadPhoto(file);
     const t = document.getElementById(targetId);
-    if (t) t.value = data;
+    if (t) t.value = url;
     const prev = document.getElementById(previewId);
-    if (prev) prev.innerHTML = `<img src="${data}" style="max-height:80px;border-radius:8px;border:1px solid var(--gray-200);">`;
-  };
-  reader.readAsDataURL(file);
+    if (prev) prev.innerHTML = `<img src="${url}" style="max-height:80px;border-radius:8px;border:1px solid var(--gray-200);">`;
+  } catch(e) {
+    Toast.error('Error al subir la foto. Intentá de nuevo.');
+  }
+  if (btn) { btn.innerHTML = '📁 Subir <input type="file" accept="image/*" style="display:none" onchange="AdminPage._loadFile(this,\''+targetId+'\',\''+previewId+'\')">'; }
 },
 
-_loadMultipleFiles(input) {
+async _loadMultipleFiles(input) {
   const container = document.getElementById('photosContainer');
   if (!container) return;
-  [...input.files].forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
+  const files = [...input.files];
+  Toast.show(`Subiendo ${files.length} foto${files.length > 1 ? 's' : ''}...`);
+  for (const file of files) {
+    try {
+      const url = await Store.uploadPhoto(file);
       const div = document.createElement('div');
-      div.innerHTML = this._photoRow(e.target.result);
+      div.innerHTML = this._photoRow(url);
       container.appendChild(div.firstElementChild);
       this._initPhotoDragSort();
-    };
-    reader.readAsDataURL(file);
-  });
+    } catch(e) {
+      Toast.error(`Error subiendo ${file.name}`);
+    }
+  }
+  Toast.success('✅ Fotos subidas');
 },
 
-_loadFileIntoRow(input) {
+async _loadFileIntoRow(input) {
   const file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const row = input.closest('.photo-input-row');
+  const row = input.closest('.photo-input-row');
+  const label = input.closest('label');
+  if (label) label.textContent = '⏳';
+  try {
+    const url = await Store.uploadPhoto(file);
     const textInput = row.querySelector('.photo-input');
-    if (textInput) textInput.value = e.target.result;
+    if (textInput) textInput.value = url;
     let img = row.querySelector('img');
     if (!img) {
       img = document.createElement('img');
       img.style.cssText = 'width:48px;height:36px;object-fit:cover;border-radius:5px;flex-shrink:0;';
       textInput?.before(img);
     }
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
+    img.src = url;
+  } catch(e) {
+    Toast.error('Error al subir. Intentá de nuevo.');
+  }
+  if (label) label.innerHTML = '📁 <input type="file" accept="image/*" style="display:none" onchange="AdminPage._loadFileIntoRow(this)">';
 },
 
 _initPhotoDragSort() {
@@ -475,8 +459,8 @@ _initPhotoDragSort() {
     // Form is dynamically rendered, binding happens via onclick on the button
   },
 
-  editProperty(id) {
-  const prop = Store.getById(id);
+async editProperty(id) {
+  const prop = await Store.getById(id);
   if (!prop) return;
   this.editingId = id;
   const content = document.getElementById('adminContent');
@@ -486,7 +470,7 @@ _initPhotoDragSort() {
 },
 
   /* ── CRUD ── */
-saveProperty() {
+async saveProperty() {
   const title   = Form.val('aTitle');
   const tipo    = Form.val('aTipo');
   const price   = Form.val('aPrice');
@@ -508,14 +492,13 @@ saveProperty() {
   const photos = [img, ...extraPhotos];
   const data = { title, tipo, price, moneda, img, link, desc, zone, barrio, mapUrl, photos, youtube };
 
+  Toast.show('Guardando...');
   if (this.editingId) {
-    const all = Store.getAll();
-    const idx = all.findIndex(p => p.id === this.editingId);
-    if (idx !== -1) { all[idx] = { ...all[idx], ...data }; Store.save(all); }
+    await Store.updateOne(this.editingId, data);
     Toast.success('✅ Publicación actualizada');
     this.editingId = null;
   } else {
-    Store.add(data);
+    await Store.add(data);
     Toast.success('✅ Publicación agregada');
   }
 
@@ -523,10 +506,10 @@ saveProperty() {
   this._setActiveNav('properties');
 },
 
-  deleteProperty(id) {
-    if (!confirm('¿Seguro que querés eliminar esta publicación?')) return;
-    Store.remove(id);
-    Toast.show('Publicación eliminada');
-    this._renderSection(this.currentSection);
-  },
+async deleteProperty(id) {
+  if (!confirm('¿Seguro que querés eliminar esta publicación?')) return;
+  await Store.remove(id);
+  Toast.show('Publicación eliminada');
+  this._renderSection(this.currentSection);
+},
 };

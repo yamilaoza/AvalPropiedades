@@ -11,13 +11,13 @@ const PropertyPage = {
   prop:         null,
   currentSlide: 0,
 
-  init() {
-    const id = new URLSearchParams(window.location.search).get('id');
-    this.prop = Store.getById(id);
-    if (!this.prop) { this._renderNotFound(); return; }
-    this._renderAll();
-    this._bindTabs();
-  },
+async init() {
+  const id = new URLSearchParams(window.location.search).get('id');
+  this.prop = await Store.getById(id);
+  if (!this.prop) { this._renderNotFound(); return; }
+  this._renderAll();
+  this._bindTabs();
+},
 
   /* ── RENDER ALL ── */
   _renderAll() {
@@ -181,15 +181,15 @@ _youtubeEmbedUrl(url) {
   },
 
   /* ── SIMILAR ── */
-  _renderSimilar() {
-    const p       = this.prop;
-    const section = document.getElementById('similarSection');
-    const grid    = document.getElementById('similarGrid');
-    if (!grid || !section) return;
-    const similar = Store.getSimilar(p.id, p.tipo);
-    if (!similar.length) { section.style.display = 'none'; return; }
-    grid.innerHTML = similar.map(s => CardBuilder.build(s)).join('');
-  },
+async _renderSimilar() {
+  const p       = this.prop;
+  const section = document.getElementById('similarSection');
+  const grid    = document.getElementById('similarGrid');
+  if (!grid || !section) return;
+  const similar = await Store.getSimilar(p.id, p.tipo);
+  if (!similar.length) { section.style.display = 'none'; return; }
+  grid.innerHTML = similar.map(s => CardBuilder.build(s)).join('');
+},
 
   /* ── NOT FOUND ── */
   _renderNotFound() {

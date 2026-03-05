@@ -189,7 +189,7 @@
   background: transparent; color: rgba(255,255,255,0.5);
   border: 1px solid rgba(255,255,255,0.12);
 }
-.prop-card__cta--wa:hover { background: var(--green); color: white; border-color: transparent; }
+.prop-card__cta--wa:hover { background: #25D366;; color: white; border-color: transparent; }
 
 
 /* ══ ABOUT (section--white) ══ */
